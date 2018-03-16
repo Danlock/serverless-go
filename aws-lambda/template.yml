@@ -9,7 +9,7 @@ Parameters:
     Description: AWS CodeStar projectID used to associate new resources to team members
 
 Resources:
-  GetHelloWorld:
+  GetRandomPerson:
     Type: AWS::Serverless::Function
     Properties:
       Handler: main
@@ -18,7 +18,7 @@ Resources:
         Fn::ImportValue:
           !Join ['-', [!Ref 'ProjectId', !Ref 'AWS::Region', 'LambdaTrustRole']]
       Events:
-        GetEvent:
+        GetPerson:
           Type: Api
           Properties:
             Path: /
