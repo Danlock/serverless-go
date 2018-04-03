@@ -56,9 +56,9 @@ func GetRandomPerson() (person *Person, err error) {
 	return responseJSON.Results[0], nil
 }
 
-// Handler is executed by AWS Lambda in the main function. Once the request
+// RequestHandler is executed by AWS Lambda in the main function. Once the request
 // is processed, it returns an Amazon API Gateway response object to AWS Lambda
-func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+func RequestHandler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	person, err := GetRandomPerson()
 	if err != nil {
 		return events.APIGatewayProxyResponse{StatusCode: http.StatusServiceUnavailable}, err
@@ -80,5 +80,5 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 }
 
 func main() {
-	lambda.Start(Handler)
+	lambda.Start(RequestHandler)
 }
