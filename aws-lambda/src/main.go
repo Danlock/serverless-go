@@ -3,31 +3,23 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 
-	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 )
 
 type Person struct {
-	Gender string
-	Email  string
-	DOB    string
-	Name   *struct {
-		Title string
-		First string
-		Last  string
+	Gender, Email, DOB, Nat string
+
+	Name struct {
+		Title, First, Last string
 	}
-	Picture *struct {
-		Large     string
-		Medium    string
-		Thumbnail string
+	Location struct {
+		Street, City, State string
 	}
-	Location *struct {
-		Street   string
-		City     string
-		State    string
-		Postcode int
+	Picture struct {
+		Large string
 	}
 }
 
@@ -56,29 +48,18 @@ func GetRandomPerson() (person *Person, err error) {
 	return responseJSON.Results[0], nil
 }
 
-// RequestHandler is executed by AWS Lambda in the main function. Once the request
-// is processed, it returns an Amazon API Gateway response object to AWS Lambda
-func RequestHandler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+func Handler() error {
 	person, err := GetRandomPerson()
 	if err != nil {
-		return events.APIGatewayProxyResponse{StatusCode: http.StatusServiceUnavailable}, err
+		return err
 	}
 
-	personJSON, err := json.Marshal(person)
-	if err != nil {
-		return events.APIGatewayProxyResponse{StatusCode: http.StatusInternalServerError}, err
-	}
+	log.Printf("Logging random person %+v", person)
 
-	return events.APIGatewayProxyResponse{
-		StatusCode: 200,
-		Body:       string(personJSON),
-		Headers: map[string]string{
-			"Content-Type": "application/json",
-		},
-	}, nil
+	return nil
 
 }
 
 func main() {
-	lambda.Start(RequestHandler)
+	lambda.Start(Handler)
 }

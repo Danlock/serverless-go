@@ -1,16 +1,23 @@
 AWSTemplateFormatVersion: 2010-09-09
+Transform: 'AWS::Serverless-2016-10-31'
+Description: Run a simple function in the cloud with an HTTP Endpoint
 Resources:
-  GetRandomPerson:
+  GetRandomPeopleFunc:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: main
+      Handler: getRandomPeople
       Runtime: go1.x
-      Role:
-        Fn::ImportValue:
-          !Join ['-', [!Ref 'ProjectId', !Ref 'AWS::Region', 'LambdaTrustRole']]
+      Timeout: 10
+      MemorySize: 128
+      ReservedConcurrentExecutions: 2
+      Description: A golang lambda function that returns an array of randomly generated people
+      Environment:
+        Variables:
+          RANDOMUSER_API_URL: https://randomuser.me/api/
       Events:
-        GetPerson:
-          Type: Api
+        Request:
           Properties:
+            Method: GET
             Path: /
-            Method: get
+          Type: Api
+      CodeUri: ./dist/getRandomPeople.zip
