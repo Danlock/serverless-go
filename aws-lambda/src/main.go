@@ -1,65 +1,36 @@
 package main
 
 import (
-	"encoding/json"
-	"errors"
 	"log"
-	"net/http"
 
 	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
 )
 
-type Person struct {
-	Gender, Email, DOB, Nat string
+var sesh = session.Must(session.NewSession())
+var S3 = s3.New(sesh)
+var bucketToScan = "golang-lambda-demo"
 
-	Name struct {
-		Title, First, Last string
-	}
-	Location struct {
-		Street, City, State string
-	}
-	Picture struct {
-		Large string
-	}
-}
-
-type RandomUserMeJSON struct {
-	Results []*Person
-	Info    struct {
-		Version string
-	}
-}
-
-func GetRandomPerson() (person *Person, err error) {
-	resp, err := http.Get("https://randomuser.me/api/?results=1")
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	var responseJSON RandomUserMeJSON
-	err = json.NewDecoder(resp.Body).Decode(&responseJSON)
-	if err != nil {
-		return nil, err
-	} else if len(responseJSON.Results) < 1 {
-		return nil, errors.New("Nothing returned!")
-	}
-
-	return responseJSON.Results[0], nil
-}
-
-func Handler() error {
-	person, err := GetRandomPerson()
+func BucketScanner() error {
+	objectList, err := S3.ListObjectsV2(&s3.ListObjectsV2Input{
+		Bucket: &bucketToScan,
+	})
 	if err != nil {
 		return err
 	}
 
-	log.Printf("Logging random person %+v", person)
-
+	totalCount := *objectList.KeyCount
+	var totalSize int64
+	for _, obj := range objectList.Contents {
+		if obj.Size != nil {
+			totalSize += *obj.Size
+		}
+	}
+	log.Printf("Info about requested bucket:\nFile Count:\t%d\tTotal Size (bytes):\t%d\n", totalCount, totalSize)
 	return nil
-
 }
 
 func main() {
-	lambda.Start(Handler)
+	lambda.Start(BucketScanner)
 }

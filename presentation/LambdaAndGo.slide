@@ -1,0 +1,111 @@
+Go!ng Serverless
+Understanding AWS Lambda with Go
+
+Daniel Lockhart
+
+github *http://github.com/danlock/serverless-go/*
+
+* What does serverless mean?
+
+.image img/serverless.png 200 200
+
+Serverless generally refers to *FaaS*, which stands for Functions as a Service.
+*FaaS* involves deploying nothing but code/a binary to the cloud
+
+Serverless also includes *PaaS* as well, (Platforms as a Service).
+eg. managed message queues (SQS/Messaging) or databases (DynamoDB/CosmosDB).
+
+Serverless is focusing on abstracting away server management and capacity planning.
+
+Spend less/no time managing infrastructure, trusting your service provider instead
+
+* Pros
+
+.image img/gopherhelmet.jpg 200 200
+
+- Pay as you go pricing model saves costs (eg. billed to the 100th millisecond).
+- Scaling up and down effortlessly and automatically
+- Iterate quickly during development, focusing on writing code rather than infrastructure
+- Less labor intensive for your team because it's a managed service
+
+* Cons
+
+.image img/gopheruphill.png 250 300
+
+- Little to no control over your infrastructure. eg. Can tweak Lambda RAM and CPU, but not independently and you're stuck with 512MB of disk space.
+- Allowing your functions to scale haphazardly can place strain on other parts of your system (Database connections...)
+- Promise of not having to worry about the infrastructure is not always upheld...
+
+
+* AWS Lambda
+
+.image img/awslambda.jpeg
+
+Largest cloud provider recently released support for Go in their very own FaaS, AWS Lambda.
+
+This is notable because they are the only cloud provider to support Go officially in their FaaS.
+Even Google Cloud Functions only support Node.js
+
+But what exactly is AWS Lambda?
+
+* AWS Lambda infrastructure
+
+AWS Lambda runs your code/binary in an Amazon Linux (RHEL variant) container that is spun up on demand.
+
+AWS Lambda is smart about spinning up containers.
+Frequently invoked functions get to reuse their containers.
+This is called a warm start, as opposed to a cold start when the function hasn't been invoked in a while.
+
+You must be mindful of previous function invocations! 
+(leftover /tmp/ files take up disk space, etc...).
+However, this also provides a way to avoid having to initialize expensive objects repeatedly.
+eg. Attaching database connections to the context that AWS Lambda passes in is a best practice.
+
+* (and more Cons!)
+
+AWS Lambda is also economical about the dynamic IP's that it gives to each container.
+Because it picks them from a limited pool, the IP you get has a decent chance of being blacklisted because the previous owner was a bad actor. 
+
+AWS Lambda functions have a max runtime of 300 seconds!
+If you are running into this limit then maybe your use case for Lambda should be reevaluated... 
+Or you can plow forward and glue together several Lambda functions together using AWS Step functions!
+
+.image img/gophertoy.jpg
+
+* Running Go on AWS Lambda History 
+AWS Lambda used to only support Java 8, Node.js 4 and 6 (very recently 8), Python 2 & 3, and .NET 1 & 2 (C#)
+
+
+If you liked static typing/compiled languages your only options were Java and C#.
+For some reason C# performance suffers on AWS Lambda, so...
+
+Java programs run in a VM. Great for long running programs that need to worry about memory management, but poorly suited to ephemeral containers that get destroyed after every invocation or so.
+Cold starts are an even bigger problem for Java programs. 
+
+* The struggle of Go on AWS Lambda
+
+While running Go on AWS Lambda was technically possible before, it involved using node.js to spawn a process that called a separate Go executable packaged within your Node.js deployment.
+This later evolved to a shim library that starts with python and C and uses CGo to interface with your Go package directly.
+
+Check out [[https://github.com/eawsy/aws-lambda-go-shim]], it's pretty interesting.
+
+.image img/golangstruggle.png 300 300
+
+* AWS Lambda properly releases Go 
+
+Now that AWS Lambda is fully behind Go, deploying a Go application is as easy as building a Go binary for Linux, placing it in a .zip file, and uploading to AWS!
+
+Or is it?
+
+* Q&A ?
+
+.image img/golangmicdrop.png 400 400
+
+* References:
+
+- https://brandur.org/go-lambda
+- https://read.acloud.guru/comparing-aws-lambda-performance-when-using-node-js-java-c-or-python-281bef2c740f
+- https://thechrisshort.wordpress.com/2017/07/22/testing-certificate-chains-in-go/ (images)
+- https://github.com/wxyyxc1992/Awesome-Links/blob/master/ProgrammingLanguage/Go/Gopher-Links.md (images)
+- https://github.com/aws/aws-lambda-dotnet/issues/13 (poor C# performance)
+- https://github.com/nzoschke/gofaas (extremely comprehensive)

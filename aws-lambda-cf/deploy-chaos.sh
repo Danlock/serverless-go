@@ -8,20 +8,27 @@ function printTimeElapsed {
 trap printTimeElapsed EXIT
 
 echo "Go getting dependencies..."
-go get github.com/aws/aws-lambda-go/lambda github.com/aws/aws-lambda-go/events
+go get github.com/aws/aws-lambda-go/lambda \
+github.com/aws/aws-lambda-go/events \
+github.com/aws/aws-sdk-go/aws/session \
+github.com/aws/aws-sdk-go/service/s3 \
+github.com/aws/aws-sdk-go/service/sns \
+github.com/aws/aws-sdk-go/aws
 
 echo "Building..."
-GOOS=linux GOARCH=amd64 go build -o dist/getRandomPeople src/main.go
+GOOS=linux GOARCH=amd64 go build -o dist/ChaosChimp src/chaos-chimp/main.go
 
-echo "Packaging..."
-zip -j dist/getRandomPeople.zip ./dist/getRandomPeople
+echo "Packaging Go code..."
+zip -j dist/CC.zip ./dist/ChaosChimp
+
+echo "Packaging Cloudformation template..."
 AWS_DEFAULT_REGION=ca-central-1 aws cloudformation package \
 --output-template-file ./dist/generated.yml \
 --s3-bucket golang-lambda-demo \
---template-file template.yml
+--template-file chaos-template.yml
 
 echo "Deploying to aws-lambda using cloudformation..."
 AWS_DEFAULT_REGION=ca-central-1 aws cloudformation deploy \
 --capabilities CAPABILITY_NAMED_IAM \
 --template-file ./dist/generated.yml \
---stack-name golang-lambda-demo-stack
+--stack-name chaos-chimp-lambda

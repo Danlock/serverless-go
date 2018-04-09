@@ -1,0 +1,24 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: 'AWS::Serverless-2016-10-31'
+Description: Run a simple function in the cloud with an HTTP Endpoint
+Resources:
+  BucketScannerV2:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: BucketScannerV2
+      Runtime: go1.x
+      Timeout: 10
+      MemorySize: 128
+      ReservedConcurrentExecutions: 2
+      Role: arn:aws:iam::736759784672:role/service-role/testLambdaRole
+      Description: A golang lambda function that returns the info about a bucket
+      Environment:
+        Variables:
+          BUCKET_TO_SCAN: golang-lambda-demo
+      Events:
+        Request:
+          Properties:
+            Method: GET
+            Path: /
+          Type: Api
+      CodeUri: ./dist/BSV2.zip
