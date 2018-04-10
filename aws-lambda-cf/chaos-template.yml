@@ -2,7 +2,7 @@ AWSTemplateFormatVersion: 2010-09-09
 Transform: 'AWS::Serverless-2016-10-31'
 Description: Run a simple function in the cloud with an HTTP Endpoint
 Resources:
-  BucketScannerV2:
+  ChaosChimp:
     Type: AWS::Serverless::Function
     Properties:
       Handler: ChaosChimp

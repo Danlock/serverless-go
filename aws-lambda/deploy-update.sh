@@ -14,10 +14,10 @@ go get github.com/aws/aws-lambda-go/lambda \
     github.com/aws/aws-sdk-go/aws/session
 
 echo "Building..."
-GOOS=linux GOARCH=amd64 go build -o dist/main src/main.go
+GOOS=linux GOARCH=amd64 go build -o dist/BucketScanner src/main.go
 
 echo "Packaging..."
-zip -j dist/main.zip dist/main
+zip -j dist/BS.zip dist/BucketScanner
 
 echo "Deploying to aws-lambda..."
 AWS_DEFAULT_REGION=ca-central-1 aws \
@@ -25,4 +25,4 @@ AWS_DEFAULT_REGION=ca-central-1 aws \
 --cli-connect-timeout 0 \
 lambda update-function-code \
 --function-name BucketScanner \
---zip-file fileb://./dist/main.zip
+--zip-file fileb://./dist/BS.zip

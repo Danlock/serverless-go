@@ -46,8 +46,15 @@ func ChaosChimp(req events.APIGatewayProxyRequest) (events.APIGatewayProxyRespon
 	if err != nil {
 		return events.APIGatewayProxyResponse{StatusCode: http.StatusInternalServerError}, err
 	}
+	fileAmt := len(objectList.Contents)
+	if fileAmt == 0 {
+		return events.APIGatewayProxyResponse{
+			StatusCode: http.StatusExpectationFailed,
+			Body:       `{"msg":"Doomed folder is empty! Someone's slacking..."}`,
+		}, nil
+	}
 
-	luckyFileIdx := rand.Intn(len(objectList.Contents))
+	luckyFileIdx := rand.Intn(fileAmt)
 	luckyFile := objectList.Contents[luckyFileIdx]
 
 	if err := NotifyVictim(phoneNumber, *luckyFile.Key); err != nil {
